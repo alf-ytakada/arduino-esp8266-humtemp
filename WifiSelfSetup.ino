@@ -21,6 +21,14 @@
 #define DHTPIN 4
 #define DHTTYPE DHT22
 
+// CDSセルのピン（ESP8266にはADCは1つしか無く、0V-1Vの範囲を10bit分解能で読めるらしい
+// ピンはTOUT固定。
+#define CDSPIN A0
+// memo : 秋月のCDS、実測で5k(明) - 500k(液晶ディスプレイの光)だった
+//       手で覆うと15M程度まで上がった
+// http://akizukidenshi.com/catalog/g/gI-00110/
+// 100k と 47kで分圧して、A0で測定すると、約920～20くらいまで変化する
+
 // 設定のformページ
 #define INDEX_HTML \
   "<html><head><meta name='viewport' content='width=device-width,initial-scale=1'></head><body>" \
@@ -46,6 +54,7 @@ char host[100];
 char path[100];
 // 温湿度計
 DHT dht(DHTPIN, DHTTYPE);
+
 /////////////////////////
 
 
@@ -257,7 +266,11 @@ void setup() {
 void loop() {
   if (is_wifi_connected()) {
     // WiFi接続時のメイン処理
+    // 明るさ
+    int brightness  = analogRead(CDSPIN);
+    // 湿度
     float humidity;
+    // 温度
     float temperature;
     if (read_hum_temp(&humidity, &temperature) == false) {
       // 読み込み失敗
@@ -266,7 +279,7 @@ void loop() {
       return;
     }
     String req_path = String(path);
-    req_path  += String("&hum=") + humidity + "&temp=" + temperature;
+    req_path  += String("&hum=") + humidity + "&temp=" + temperature + "&bri=" + brightness;
     Serial.println(req_path);
 
     String response = "";
@@ -275,7 +288,7 @@ void loop() {
     Serial.println(status);
     //Serial.println(response);
     //Note: responseがあまりにも大きいと、システムが落ちる
-    delay(1000);
+    delay(60000);
   }
   else {
     //setup_config_mode();
