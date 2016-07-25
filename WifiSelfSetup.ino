@@ -279,7 +279,7 @@ void loop() {
       return;
     }
     String req_path = String(path);
-    req_path  += String("&hum=") + humidity + "&temp=" + temperature + "&bri=" + brightness;
+    req_path  += String("?hum=") + humidity + "&temp=" + temperature + "&bri=" + brightness;
     Serial.println(req_path);
 
     String response = "";
